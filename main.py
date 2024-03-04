@@ -7,7 +7,7 @@ cameraId = 0
 camera = cv.VideoCapture(cameraId)
 
 while True:
-    # 读取一帧视频，ret 检测是否读取，Flase 即为最后一帧图像，frame 为图片
+    # 读取一帧视频，ret 检测是否读取，False 即为最后一帧图像，frame 为图片
     ret, frame = camera.read()
 
     Draw = True

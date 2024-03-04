@@ -9,21 +9,31 @@ fonts = cv.FONT_HERSHEY_COMPLEX
 
 # dlib 人脸检测器，识别人脸
 detectFace = dlib.get_frontal_face_detector()
+# dlib 68点人脸识别特征点数据集
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
 
-def faceDetector(image, gray, Draw = True):
-    cordFace1 = (0, 0)
-    cordFace2 = (0, 0)
-
+def faceDetector(image, gray, draw=True):
+    """
+    输入原图像与对应的灰度图像，识别并用绿色方框绘制出人脸
+    :param image: 图像
+    :param gray: 灰度图像
+    :param draw: 判断是否绘制人脸框
+    :return: 绘制人脸框后的图像，人脸检测后的灰度图像
+    """
+    # 对灰度图像进行人脸检测处理
     faces = detectFace(gray)
+
+    cord_face1 = (0, 0)
+    cord_face2 = (0, 0)
     face = None
 
     for face in faces:
-
-        cordFace1 = (face.left(), face.top())
-        cordFace2 = (face.right(), face.bottom())
-
-        if Draw:
-            cv.rectangle(image, cordFace1, cordFace2, GREEN, 2)
+        # 人脸框对角点坐标赋值
+        cord_face1 = (face.left(), face.top())
+        cord_face2 = (face.right(), face.bottom())
+        if draw:
+            # cv.rectangle 在image 上通过对角点绘制矩形，设置颜色，框粗细
+            cv.rectangle(image, cord_face1, cord_face2, GREEN, 2)
 
     return image, face
