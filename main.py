@@ -16,6 +16,10 @@ while True:
     # 调用faceDetector 逐帧检测人脸并在图片上画出人脸范围，输出到image
     image, face = module.faceDetector(frame, grayFrame)
 
+    # 如果没有检测到面部就调用faceLandmarkDetector 会令数据类型不符而使程序崩溃
+    if face is not None:
+        image, pointList = module.faceLandmarkDetector(frame, grayFrame, face)
+
     # imshow 使用窗口显示图像，若没有窗口则创建
     cv.imshow('Frame', image)
 
