@@ -112,8 +112,46 @@ def eyesLandmarkPoints(image, point_list, draw=True):
     return right_eyes_points, left_eyes_points
 
 
-def blindDetector(eyes_points):
-    top = eyes_points[1:3]
-    bottom = eyes_points[4:6]
-    top_mid = midPoint(top[0], top[1])
-    bottom_mid = midPoint(bottom[0], bottom[1])
+def eyesTracking(image, gray, eye_points):
+    """
+    通过单眼特征点坐标与灰度图像的二值化处理提取眼睛黑色部分
+    :param image: 原图片
+    :param gray: 灰度图片
+    :param eye_points: 单眼特征点坐标
+    :return:
+    """
+    # .shape获取原图像大小
+    dim = gray.shape
+    # np.zeros创建dim大小的多维数组，默认值为0，表现为纯黑色的灰度图像
+    mask = np.zeros(dim, dtype=np.uint8)
+
+    # 使用眼睛特征点坐标集eyes_points 创建np数组
+    PollyPoints = np.array(eye_points, dtype=np.int32)
+    # cv.fillPoly 在图像mask 以数组PollyPoints 组成的闭合曲线绘制封闭图形，颜色设置为255，纯白色的灰度图像
+    cv.fillPoly(mask, [PollyPoints], 255)
+
+    # 特征点绘制的图形与灰度图像进行与运算分离出眼睛的灰度图像
+    eye_image = cv.bitwise_and(gray, gray, mask=mask)
+    # 计算眼睛特征点坐标的最大最小横纵坐标值
+    maxX = (max(eye_points, key=lambda item: item[0]))[0]
+    minX = (min(eye_points, key=lambda item: item[0]))[0]
+    maxY = (max(eye_points, key=lambda item: item[1]))[1]
+    minY = (min(eye_points, key=lambda item: item[1]))[1]
+
+    # 将眼睛中黑色部分转为白色
+    eye_image[mask == 0] = 255
+    # 剪裁下眼睛大小的画布
+    cropped_eye = eye_image[minY:maxY, minX:maxX]
+    height, width = cropped_eye.shape
+    # cv.resize 对眼睛图像进行放大以便于观察
+    resize_cropped_eye = cv.resize(cropped_eye, (width * 5, height * 5))
+    # cv.threshold 将眼睛的灰度图像转化为二值图像，阈值为100-->后续可添加调试阈值功能以适应不同光照环境
+    ret, thresholdEye = cv.threshold(resize_cropped_eye, 100, 255, cv.THRESH_BINARY)
+
+    # 提取的眼睛灰度图像
+    cv.namedWindow("cropEye")
+    cv.imshow("cropEye", resize_cropped_eye)
+
+    # 二值化处理后的眼睛黑色部分
+    cv.namedWindow("thresholdEye")
+    cv.imshow("thresholdEye", thresholdEye)
