@@ -3,16 +3,16 @@ import module
 
 # VideoCapture 调用摄像头，参数0为电脑默认摄像头
 cameraId = 0
-camera = cv.VideoCapture(0)
+camera = cv.VideoCapture()
 # camera.open('Facetracking.mov')
 # camera.open('VideoFile.mp4')
 # camera.open('http://admin:admin@10.31.151.122:8081/video')
 
 while True:
     # 读取一帧视频，ret 检测是否读取，False 即为最后一帧图像，frame 为图片
-    ret, frame = camera.read()
+    # ret, frame = camera.read()
 
-    # frame = cv.imread('face4.png')
+    frame = cv.imread('Cases/face2.png')
 
     # frame = cv.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA)
 
