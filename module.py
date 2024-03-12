@@ -125,64 +125,72 @@ def eyesTracking(image, gray, eye_points):
     :param eye_points: 单眼特征点坐标
     :return:
     """
+    imagec = image.copy()
     # .shape获取原图像大小
-    dim = gray.shape
+    # dim = gray.shape
     # np.zeros创建dim大小的多维数组，默认值为0，表现为纯黑色的灰度图像
-    mask = np.zeros(dim, dtype=np.uint8)
+    # mask = np.zeros(dim, dtype=np.uint8)
 
     # 使用眼睛特征点坐标集eyes_points 创建np数组
-    PollyPoints = np.array(eye_points, dtype=np.int32)
+    # PollyPoints = np.array(eye_points, dtype=np.int32)
     # cv.fillPoly 在图像mask 以数组PollyPoints 组成的闭合曲线绘制封闭图形，颜色设置为255，纯白色的灰度图像
-    cv.fillPoly(mask, [PollyPoints], 255)
+    # cv.fillPoly(mask, [PollyPoints], 255)
 
-    # 特征点绘制的图形与灰度图像进行与运算分离出眼睛的灰度图像
-    eye_image = cv.bitwise_and(gray, gray, mask=mask)
-    eye_image_blur = cv.GaussianBlur(eye_image, (5, 5), 0)
     # 计算眼睛特征点坐标的最大最小横纵坐标值
     maxX = (sorted(eye_points, key=lambda item: item[0], reverse=True))[0][0]
-    SecondMaxX = (sorted(eye_points, key=lambda item: item[0], reverse=True))[1][0]
     minX = (sorted(eye_points, key=lambda item: item[0]))[0][0]
-    SecondMinX = (sorted(eye_points, key=lambda item: item[0]))[1][0]
     maxY = (sorted(eye_points, key=lambda item: item[1], reverse=True))[0][1]
     minY = (sorted(eye_points, key=lambda item: item[1]))[0][1]
+    # 画布剪裁
+    x = (maxX - minX) % 2
+    y = (maxY - minY) % 2
+
+    eye_image = imagec[minY - y:maxY + y, minX - x:maxX + x]
+    eye_image = cv.resize(eye_image, None, fx=3, fy=3, interpolation=cv.INTER_AREA)
+    cv.imshow('eye_image', eye_image)
+    # 特征点绘制的图形与灰度图像进行与运算分离出眼睛的图像
+    # eye_image = cv.bitwise_and(gray, gray, mask=mask)
+    # 高斯滤波处理
+    eye_image_blur = cv.GaussianBlur(eye_image, (5, 5), 0)
 
     # 将眼睛中黑色部分转为白色
-    eye_image_blur[mask == 0] = 255
+    # eye_image_blur[mask == 0] = 255
 
 
 
     # 高斯滤波
-    image = cv.GaussianBlur(image, (7, 7), 0)
+    # image = cv.GaussianBlur(image, (7, 7), 0)
     # 红色分量
-    blue, green, red = cv.split(image, mv=None)
-    cv.imshow('red', red)
+    blue, green, eye_image_blur_red = cv.split(eye_image_blur, mv=None)
+    cv.imshow('red', eye_image_blur_red)
 
     # 剪裁下眼睛大小的画布
-    x = (maxX - minX) % 2
-    y = (maxY - minY) % 2
-    image_cropped_eye = image[minY - y:maxY + y, minX - x:maxX + x]
-    image_cropped_eye = cv.resize(image_cropped_eye, None, fx=3, fy=3, interpolation=cv.INTER_AREA)
+    # x = (maxX - minX) % 2
+    # y = (maxY - minY) % 2
+    # image_cropped_eye = image[minY - y:maxY + y, minX - x:maxX + x]
+    # image_cropped_eye = cv.resize(image_cropped_eye, None, fx=3, fy=3, interpolation=cv.INTER_AREA)
     #cv.imshow('image_cropped_eye', image_cropped_eye)
 
-    gray_image_cropped_eye = cv.cvtColor(image_cropped_eye, cv.COLOR_BGR2GRAY)
-    cv.imshow('gray1', gray_image_cropped_eye)
-    equ = cv.equalizeHist(gray_image_cropped_eye)
-    cv.imshow('equ1', equ)
+    # gray_image_cropped_eye = cv.cvtColor(image_cropped_eye, cv.COLOR_BGR2GRAY)
+    # cv.imshow('gray1', gray_image_cropped_eye)
+    # 直方图均衡化
+    # equ = cv.equalizeHist(gray_image_cropped_eye)
+    # cv.imshow('equ1', equ)
 
 
 
 
 
 
-    cropped_eye = eye_image_blur[minY:maxY, minX:maxX]
-    height, width = cropped_eye.shape
+    # cropped_eye = eye_image_blur[minY:maxY, minX:maxX]
+    # height, width = cropped_eye.shape
 
     # cv.resize 对眼睛图像进行放大以便于观察
     # resize_cropped_eye = cv.resize(cropped_eye, (width * 5, height * 5))
     # cv.threshold 将眼睛的灰度图像转化为二值图像，阈值为100-->后续可添加调试阈值功能以适应不同光照环境
-    ret, thresholdEye = cv.threshold(eye_image_blur, 50, 255, cv.THRESH_BINARY)
-    ret1, red = cv.threshold(red, 70, 255, cv.THRESH_BINARY)
-    cv.imshow('red1', red)
+    # ret, thresholdEye = cv.threshold(eye_image_blur_red, 30, 255, cv.THRESH_BINARY)
+    # ret1, eye_image_blur_red_BINARY = cv.threshold(eye_image_blur_red, 30, 255, cv.THRESH_BINARY)
+    # cv.imshow('BINARY', eye_image_blur_red_BINARY)
 
     """
     thresholdEyefix = thresholdEye.copy()
@@ -210,26 +218,26 @@ def eyesTracking(image, gray, eye_points):
     """
 
 
-
     canny = 100
 
 
-    height, width = equ.shape[0:2]#eye_image_blur
+    height, width = eye_image_blur_red.shape[0:2]#eye_image_blur
     # 设置阈值
-    thresh = 30
+    thresh = 50
     # 遍历每一个像素点
     for row in range(height):
         for col in range(width):
             # 获取到灰度值
-            gray = equ[row, col]
+            gray = eye_image_blur_red[row, col]
             # 如果灰度值高于阈值 就等于255最大值
             if gray > thresh:
-                equ[row, col] = 255
+                eye_image_blur_red[row, col] = 255
             # 如果小于阈值，就直接改为0
             elif gray < thresh:
-                equ[row, col] = 0
+                eye_image_blur_red[row, col] = 0
 
-
+    equ = cv.equalizeHist(eye_image_blur_red)
+    cv.imshow('hist', equ)
 
     # eye_image_blur[1,1] = 1
 
@@ -241,12 +249,12 @@ def eyesTracking(image, gray, eye_points):
     if circles is not None:
         circles = np.uint16(np.around(circles))
         for i in circles[0, :]:
-            cv.circle(image_cropped_eye, (i[0], i[1]), i[2], RED, 1)  # 在原图上画圆，圆心，半径，颜色，线框
-            cv.circle(image_cropped_eye, (i[0], i[1]), 2, RED, 1)
+            cv.circle(eye_image, (i[0], i[1]), i[2], RED, 1)  # 在原图上画圆，圆心，半径，颜色，线框
+            cv.circle(eye_image, (i[0], i[1]), 2, RED, 1)
 
-            cv.circle(gray_image_cropped_eye, (i[0], i[1]), i[2], 255, 1)
+            # cv.circle(gray_image_cropped_eye, (i[0], i[1]), i[2], 255, 1)
 
-    cv.imshow('image_cropped_eye', image_cropped_eye)
+    cv.imshow('image_cropped_eye', eye_image)
 
 
     """
@@ -272,6 +280,7 @@ def eyesTracking(image, gray, eye_points):
                 white_run_length = 0
     """
 
+    """
     # 将剪切的二值图像分为三分，根据哪部分的黑色部分更多作为判断眼睛位置的依据
     div_part = int(width / 3)
     right_part = thresholdEye[0:height, 0:div_part]
@@ -285,15 +294,14 @@ def eyesTracking(image, gray, eye_points):
 
     # 二值图像的轮廓
     edges = cv.Canny(thresholdEye, threshold1=canny/2, threshold2=canny)
-
+    """
     # 提取的眼睛灰度图像
-    cv.imshow("cropEye", gray_image_cropped_eye)#eye_image_blur
+    # cv.imshow("cropEye", gray_image_cropped_eye)#eye_image_blur
     # 二值化处理后的眼睛黑色部分
-    cv.imshow("thresholdEye", gray_image_cropped_eye)
+    # cv.imshow("thresholdEye", gray_image_cropped_eye)
     # cv.imshow('test', thresholdEyefix)
     # 二值化图像的轮廓
     # cv.imshow("edge", edges)
-    return pos, color
 
 
 def position(point_list):
