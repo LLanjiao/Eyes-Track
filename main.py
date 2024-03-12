@@ -6,9 +6,9 @@ import input
 # cameraId = 0
 camera = cv.VideoCapture(0)
 # camera.open('Facetracking.mov')
-# camera = input.inputByVideo('Cases/Facetracking.mov')
+# camera = input.inputByVideo('Sources/Facetracking.mov')
 # camera.open('http://admin:admin@10.31.151.122:8081/video')
-# camera = input.inputByVideo('Cases/VideoFile.mp4')
+# camera = input.inputByVideo('Sources/VideoFile.mp4')
 
 while True:
     # 读取一帧视频，ret 检测是否读取，False 即为最后一帧图像，frame 为图片
@@ -16,7 +16,7 @@ while True:
     ret, frame = camera.read()
 
 
-    # frame = cv.imread('Cases/face2.png')
+    # frame = cv.imread('Sources/face2.png')
 
     # frame = cv.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA)
 
