@@ -7,7 +7,7 @@ from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtWidgets import QWidget, QApplication, QPushButton, QLabel
 from PyQt6.uic import loadUi
 
-import input
+from frame_sources.pic import pic
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -50,12 +50,12 @@ class Window(QWidget):
 
     def display_image(self, img: QImage, window="faceFrame"):
         """
-        Display the image on a window - which is a label specified in the GUI .ui file
+        Display the image on a window - which is a label specified in the gui .ui file
         """
 
         display_label: QLabel = getattr(self, window, None)
         if display_label is None:
-            raise ValueError(f"No such display window in GUI: {window}")
+            raise ValueError(f"No such display window in gui: {window}")
         display_label.setPixmap(QPixmap.fromImage(img))
         display_label.setScaledContents(True)
 
@@ -63,7 +63,9 @@ class Window(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    frame = cv2.imread('../Resources/face.png')
+    p = pic()
+    frame = p.start()
+    # frame = cv2.imread('../resources/face2.png')
     window = Window(frame)
     window.setWindowTitle("Eye Tracking")
     window.show()

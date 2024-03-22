@@ -17,7 +17,7 @@ fonts = cv.FONT_HERSHEY_COMPLEX
 detectFace = dlib.get_frontal_face_detector()
 # dlib 68点人脸识别特征点数据集
 predictor = dlib.shape_predictor(
-    "Predictor/shape_predictor_68_face_landmarks.dat")
+    "predictor/shape_predictor_68_face_landmarks.dat")
 
 
 def midPoint(point1, point2):
@@ -220,6 +220,8 @@ def eyesTracking(image, gray, eye_points):
 
     canny = 100
 
+    eye_image_blur_red = cv.equalizeHist(eye_image_blur_red)
+    cv.imshow('hist', eye_image_blur_red)
 
     height, width = eye_image_blur_red.shape[0:2]#eye_image_blur
     # 设置阈值
@@ -236,8 +238,7 @@ def eyesTracking(image, gray, eye_points):
             elif gray < thresh:
                 eye_image_blur_red[row, col] = 0
 
-    equ = cv.equalizeHist(eye_image_blur_red)
-    cv.imshow('hist', equ)
+    cv.imshow('BINARY', eye_image_blur_red)
 
     # eye_image_blur[1,1] = 1
 
@@ -245,7 +246,7 @@ def eyesTracking(image, gray, eye_points):
     maxRadius = int(height / 10)
 
 
-    circles = cv.HoughCircles(equ, cv.HOUGH_GRADIENT, 1, 500, param1=canny, param2=5, minRadius=minRadius*0, maxRadius=maxRadius*8)
+    circles = cv.HoughCircles(eye_image_blur_red, cv.HOUGH_GRADIENT, 1, 500, param1=canny, param2=5, minRadius=minRadius*0, maxRadius=maxRadius*8)
     if circles is not None:
         circles = np.uint16(np.around(circles))
         for i in circles[0, :]:

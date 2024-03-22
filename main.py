@@ -1,22 +1,21 @@
 import cv2 as cv
 import module
-import input
 
 # VideoCapture 调用摄像头，参数0为电脑默认摄像头
 # cameraId = 0
-camera = cv.VideoCapture(0)
+# camera = cv.VideoCapture(0)
 # camera.open('Facetracking.mov')
-# camera = input.inputByVideo('Sources/Facetracking.mov')
+# camera = input.inputByVideo('resources/Facetracking.mov')
 # camera.open('http://admin:admin@10.31.151.122:8081/video')
-# camera = input.inputByVideo('Sources/VideoFile.mp4')
+# camera = input.inputByVideo('resources/VideoFile.mp4')
 
 while True:
     # 读取一帧视频，ret 检测是否读取，False 即为最后一帧图像，frame 为图片
     # ret, frame = camera.read()
-    ret, frame = camera.read()
+    # ret, frame = camera.read()
 
 
-    # frame = cv.imread('Sources/face2.png')
+    frame = cv.imread('resources/face2.png')
 
     # frame = cv.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA)
 
