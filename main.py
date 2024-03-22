@@ -15,7 +15,7 @@ while True:
     # ret, frame = camera.read()
 
 
-    frame = cv.imread('resources/face2.png')
+    frame = cv.imread('resources/face.png')
 
     # frame = cv.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv.INTER_AREA)
 

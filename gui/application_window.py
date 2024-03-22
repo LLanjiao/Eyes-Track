@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QWidget, QApplication, QPushButton, QLabel
 from PyQt6.uic import loadUi
 
 from frame_sources.pic import pic
+from settings import settings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -18,7 +19,7 @@ class Window(QWidget):
 
     def __init__(self, frame):
         super(Window, self).__init__()
-        loadUi('./assets/Eyes-Track.ui', self)
+        loadUi(settings.GUI_FILE_PATH, self)
 
         self.frame = frame
 
