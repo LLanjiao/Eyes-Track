@@ -12,7 +12,7 @@ class image(frameSources):
         self.frame = cv2.imread(self.filePath)
 
     def next_frame(self):
-        return self.frame
+        return True, self.frame
 
     def stop(self):
         self.frame = None

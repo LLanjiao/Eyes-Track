@@ -14,7 +14,7 @@ class video(frameSources):
 
     def next_frame(self):
         ret, frame = self.videoSources.read()
-        return frame
+        return ret, frame
 
     def stop(self):
         self.videoSources.release()
