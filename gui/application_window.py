@@ -4,7 +4,7 @@ import warnings
 import numpy
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QFileDialog
+from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QFileDialog, QSlider
 from PyQt6.uic import loadUi
 
 from frame_sources.image import image
@@ -18,7 +18,8 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 class Window(QWidget):
     startCamera: QPushButton
     openFile: QPushButton
-    test: QPushButton
+    stop: QPushButton
+    threshSlider: QSlider
 
     def __init__(self):
         super(Window, self).__init__()
@@ -29,14 +30,13 @@ class Window(QWidget):
         self.frame = None
         self.timer = None
         self.frameSources = None
+        self.thresh = 50
         self.tracking = eyes_tracking()
 
         self.startCamera.clicked.connect(self.play)
         self.openFile.clicked.connect(self.fileChoose)
-        self.test.clicked.connect(self.print)
-
-    def print(self):
-        print(self.fileType)
+        self.stop.clicked.connect(self.stopPlay)
+        self.threshSlider.valueChanged.connect(self.threshChange)
 
     def fileChoose(self):
         """
@@ -67,12 +67,30 @@ class Window(QWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.nextFrame)
         self.timer.start(settings.REFRESH_PERIOD)
+        # self.nextFrame()
 
     def nextFrame(self):
-        self.frame = self.frameSources.next_frame()
-        frame, eyesImage = self.tracking.track(self.frame)
-        self.display_image(self.opencv_to_qt(frame))
-        self.display_image(self.opencv_to_qt(eyesImage), window="eyesImage")
+        ret, self.frame = self.frameSources.next_frame()
+        if not ret:
+            self.timer.stop()
+        else:
+            frame, eyesImage, redWeight, histogram, binary, rightEye = self.tracking.track(self.frame, self.thresh)
+            self.display_image(self.opencv_to_qt(frame))
+            self.display_image(self.opencv_to_qt(eyesImage), window="eyesImage")
+            self.display_image(self.opencv_to_qt(redWeight), window="redWeight")
+            self.display_image(self.opencv_to_qt(histogram), window="histogram")
+            self.display_image(self.opencv_to_qt(binary), window="binary")
+            self.display_image(self.opencv_to_qt(rightEye), window="rightEye")
+
+    def stopPlay(self):
+        self.frameSources.stop()
+        self.timer.stop()
+        self.findLabelbyName("faceFrame").setText("faceFrame")
+        self.findLabelbyName("eyesImage").setText("eyesImage")
+        self.findLabelbyName("redWeight").setText("redWeight")
+        self.findLabelbyName("histogram").setText("histogram")
+        self.findLabelbyName("binary").setText("binary")
+        self.findLabelbyName("rightEye").setText("rightEye")
 
     @staticmethod
     def opencv_to_qt(img) -> QImage:
@@ -95,8 +113,16 @@ class Window(QWidget):
         """
         显示图片
         """
-        display_label: QLabel = getattr(self, window, None)
-        if display_label is None:
-            raise ValueError(f"No such display window in gui: {window}")
+        display_label = self.findLabelbyName(window)
         display_label.setPixmap(QPixmap.fromImage(img))
         display_label.setScaledContents(True)
+
+    def findLabelbyName(self, window):
+        resLabel: QLabel = getattr(self, window, None)
+        if resLabel is None:
+            raise ValueError(f"No such display window in gui: {window}")
+        return resLabel
+
+    def threshChange(self):
+        self.thresh = self.threshSlider.value()
+        print(self.thresh)
