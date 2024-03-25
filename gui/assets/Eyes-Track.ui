@@ -32,74 +32,6 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="3">
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QLabel" name="eyesImage">
-         <property name="styleSheet">
-          <string notr="true">border: 1px solid black;</string>
-         </property>
-         <property name="text">
-          <string>eyesImage</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="redComponent">
-         <property name="styleSheet">
-          <string notr="true">border: 1px solid black;</string>
-         </property>
-         <property name="text">
-          <string>redComponent</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="hist">
-         <property name="styleSheet">
-          <string notr="true">border: 1px solid black;</string>
-         </property>
-         <property name="text">
-          <string>hist</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="binary">
-         <property name="styleSheet">
-          <string notr="true">border: 1px solid black;</string>
-         </property>
-         <property name="text">
-          <string>binary</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLabel" name="leftEye">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>leftEye</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="rightEye">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>rightEye</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
      <item row="1" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
@@ -119,18 +51,145 @@
       </layout>
      </item>
      <item row="0" column="0">
-      <widget class="QSlider" name="verticalSlider">
+      <widget class="QSlider" name="threshSlider">
+       <property name="value">
+        <number>50</number>
+       </property>
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
       </widget>
      </item>
      <item row="1" column="3">
-      <widget class="QPushButton" name="test">
+      <widget class="QPushButton" name="stop">
        <property name="text">
-        <string>test</string>
+        <string>stop</string>
        </property>
       </widget>
+     </item>
+     <item row="0" column="3">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLabel" name="label_10">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="eyesImage">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>eyesImage</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="redWeight">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>redWeight</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="histogram">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>histogram</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="binary">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>binary</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="rightEye">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>rightEye</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
