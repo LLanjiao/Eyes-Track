@@ -14,6 +14,7 @@ class Settings:
     GUI_FILE_PATH: Path = e("GUI_FILE_PATH", ASSETS / "Eyes-Track.ui")
 
     CASES_FILE_PATH = e("CASES_FILE_PATH", BASE_DIR / "resources")
+    PREDICTOR_PATH = e("PREDICTOR_PATH", BASE_DIR / "predictor" / "shape_predictor_68_face_landmarks.dat")
 
     REFRESH_PERIOD: int = e("CAMERA_REFRESH_PERIOD", 33)
 
