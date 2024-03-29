@@ -174,4 +174,3 @@ class Window(QWidget):
 
     def threshChange(self):
         self.thresh = self.threshSlider.value()
-        print(self.thresh)
