@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>850</width>
+    <width>879</width>
     <height>614</height>
    </rect>
   </property>
@@ -16,6 +16,201 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="1" column="1">
     <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="2">
+      <layout class="QHBoxLayout" name="cameraLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QComboBox" name="cameraChoose">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="currentText">
+            <string>computerCamera</string>
+           </property>
+           <property name="maxVisibleItems">
+            <number>10</number>
+           </property>
+           <property name="insertPolicy">
+            <enum>QComboBox::InsertAtBottom</enum>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>computerCamera</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>phoneCamera</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="camera">
+           <property name="text">
+            <string>openCamera</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="3">
+      <layout class="QVBoxLayout" name="viewLayout">
+       <item>
+        <layout class="QHBoxLayout" name="eyesImage">
+         <item>
+          <widget class="QLabel" name="eyeImage_left">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>eyeImage_left</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="eyeImage_right">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>eyeImage_right</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="redWeight">
+         <item>
+          <widget class="QLabel" name="redWeight_left">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>redWeight_left</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="redWeight_right">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>redWeight_right</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="histogram">
+         <item>
+          <widget class="QLabel" name="histogram_left">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>histogram_left</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="histogram_right">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>histogram_right</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="binary">
+         <item>
+          <widget class="QLabel" name="binary_left">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>binary_left</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="binary_right">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>binary_right</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="tracking">
+         <item>
+          <widget class="QLabel" name="tracking_left">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>tracking_left</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="tracking_right">
+           <property name="styleSheet">
+            <string notr="true">border: 1px solid black;</string>
+           </property>
+           <property name="text">
+            <string>tracking_right</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="3">
+      <layout class="QHBoxLayout" name="fileLayout">
+       <item>
+        <widget class="QPushButton" name="openFile">
+         <property name="text">
+          <string>openFile</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="stop">
+         <property name="text">
+          <string>stop</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
      <item row="0" column="2">
       <widget class="QLabel" name="faceFrame">
        <property name="mouseTracking">
@@ -32,24 +227,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QPushButton" name="startCamera">
-         <property name="text">
-          <string>startCamera</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="openFile">
-         <property name="text">
-          <string>openFile</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item row="0" column="0">
       <widget class="QSlider" name="threshSlider">
        <property name="value">
@@ -59,137 +236,6 @@
         <enum>Qt::Vertical</enum>
        </property>
       </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QPushButton" name="stop">
-       <property name="text">
-        <string>stop</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <item>
-          <widget class="QLabel" name="label_10">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="eyesImage">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>eyesImage</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="redWeight">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>redWeight</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <widget class="QLabel" name="label_4">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="histogram">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>histogram</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="binary">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>binary</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="label_7">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="rightEye">
-           <property name="styleSheet">
-            <string notr="true">border: 1px solid black;</string>
-           </property>
-           <property name="text">
-            <string>rightEye</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
      </item>
     </layout>
    </item>
