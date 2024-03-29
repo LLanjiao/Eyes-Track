@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import dlib
-import math
+
+from settings import settings
 
 GREEN = (0, 255, 0)
 ORANGE = (255, 165, 0)
@@ -16,8 +17,7 @@ fonts = cv2.FONT_HERSHEY_COMPLEX
 # dlib 人脸检测器，识别人脸
 detectFace = dlib.get_frontal_face_detector()
 # dlib 68点人脸识别特征点数据集
-predictor = dlib.shape_predictor(
-    "predictor/shape_predictor_68_face_landmarks.dat")
+predictor = dlib.shape_predictor(str(settings.PREDICTOR_PATH))
 
 
 class eyes_tracking:
