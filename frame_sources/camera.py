@@ -7,7 +7,7 @@ class camera(frameSources):
     def __init__(self, cameraType):
         self.cameraType = cameraType
         self.cameraID = 0
-        self.phoneCameraURL = "http://admin:admin@10.31.88.111:8081/video"
+        self.phoneCameraURL = "http://admin:admin@10.31.162.180:8081/video"
         self.getCamera = None
 
     def start(self):
