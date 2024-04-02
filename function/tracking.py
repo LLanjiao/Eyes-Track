@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import dlib
+import sys
 
 from settings import settings
 
@@ -26,6 +27,16 @@ class eyes_tracking:
         self.eyesPoints = None      # 眼睛坐标集
         self.rightEyesPoints = None # 右眼坐标集
         self.leftEyesPoints = None  # 左眼坐标集
+
+    def test(self, frame, thresh):
+        faceLandmarkFrame = frame.copy()
+        haveFace = self.eyesLandmarkPointsExtract(faceLandmarkFrame)
+        eyeImage_left, eyeImage_right = self.eyesFrameSplit(frame)
+        redWeight_left, histogram_left, binary_left = self.eyesFrameProcessing(eyeImage_left, thresh)
+        left, right = self.irisDetectionByOperator(binary_left)
+        print(left, right)
+        return False, frame, None, None, None, None, None, None, None, None, None, None
+
 
     def track(self, frame, thresh):
         """
@@ -54,10 +65,10 @@ class eyes_tracking:
 
             # 左眼处理
             redWeight_left, histogram_left, binary_left = self.eyesFrameProcessing(eyeImage_left, thresh)
-            trackingEye_left = self.irisDetection(binary_left, eyeImage_left)
+            trackingEye_left = self.irisDetectionByOperator(binary_left, eyeImage_left)
             # 右眼处理
             redWeight_right, histogram_right, binary_right = self.eyesFrameProcessing(eyeImage_right, thresh)
-            trackingEye_right = self.irisDetection(binary_right, eyeImage_right)
+            trackingEye_right = self.irisDetectionByOperator(binary_right, eyeImage_right)
 
             return haveFace, faceLandmarkFrame, \
                    eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, \
@@ -130,7 +141,7 @@ class eyes_tracking:
         lminY = (sorted(self.leftEyesPoints, key=lambda item: item[1]))[0][1]
         lx = (lmaxX - lminX) % 2
         ly = (lmaxY - lminY) % 2
-        eyesImage_left = frame[lminY - ly:lmaxY + ly, lminX - lx:lmaxX + lx]
+        eyesImage_left = frame[lminY - ly:lmaxY + ly, lminX:lmaxX]
         eyesImage_left = cv2.resize(eyesImage_left, None, fx=3, fy=3, interpolation=cv2.INTER_AREA)
 
         # 右眼
@@ -140,7 +151,7 @@ class eyes_tracking:
         rminY = (sorted(self.rightEyesPoints, key=lambda item: item[1]))[0][1]
         rx = (rmaxX - rminX) % 2
         ry = (rmaxY - rminY) % 2
-        eyesImage_right = frame[rminY - ry:rmaxY + ry, rminX - rx:rmaxX + rx]
+        eyesImage_right = frame[rminY - ry:rmaxY + ry, rminX:rmaxX]
         eyesImage_right = cv2.resize(eyesImage_right, None, fx=3, fy=3, interpolation=cv2.INTER_AREA)
 
         return eyesImage_left, eyesImage_right
@@ -177,10 +188,10 @@ class eyes_tracking:
             for col in range(width):
                 # 获取到灰度值
                 gray = eyesImage_blur_redWeight_histogram[row, col]
-                # 如果灰度值高于阈值 就等于255最大值
+                # 如果灰度值高于阈值 就等于255,白色
                 if gray > thresh:
                     eyesImage_blur_redWeight_histogram_binary[row, col] = 255
-                # 如果小于阈值，就直接改为0
+                # 如果小于阈值，就直接改为0，黑色
                 elif gray < thresh:
                     eyesImage_blur_redWeight_histogram_binary[row, col] = 0
 
@@ -209,4 +220,64 @@ class eyes_tracking:
             for i in circles[0, :]:
                 cv2.circle(eyesImagePainted, (i[0], i[1]), i[2], RED, 1)  # 在原图上画圆，圆心，半径，颜色，线框
                 cv2.circle(eyesImagePainted, (i[0], i[1]), 2, RED, 1)
+        return eyesImagePainted
+
+    @staticmethod
+    def irisDetectionByOperator(binary, eyeImage):
+        """
+        使用圆算子算法检测虹膜
+        需要定位的黑色部分为0，不需要的白色部分为255，因为圆算子数值为1，只需求出两数组的哈达玛积，最小值即为黑色部分最多的位置，即为要定位的虹膜位置
+        :param binary: 二值化图像
+        :param eyeImage: 眼睛的原图像
+        :return: eyesImagePainted绘制出检测的虹膜位置的眼睛图像
+        """
+        height, width = binary.shape[0:2]
+        left = -1
+        right = -1
+        # 先从左至右再从右至左，检测首先出现黑色的列，两列横坐标差为检测的虹膜直径，中心为圆心横坐标
+        for col in range(width):
+            for row in range(height):
+                if binary[row, col] == 0:
+                    left = col
+                    break
+            if left != -1:
+                break
+        for col in range(width - 1, -1, -1):
+            for row in range(height):
+                if binary[row, col] == 0:
+                    right = col
+                    break
+            if right != -1:
+                break
+        # 直径
+        diameter = right - left
+        # 半径
+        radius = diameter // 2
+
+        # 创建圆算子，背景为0，圆为1
+        circleOperator = np.zeros((diameter, diameter), dtype=np.uint8)
+        cv2.circle(circleOperator, (radius, radius), radius, (1, ), -1)
+
+        # 原图像高度可能小于圆算子高度，对扩大图像以进行圆算子计算
+        bigBinary = np.zeros((height + diameter + diameter, width), dtype=np.uint8) + 255
+        bigBinary[diameter:height + diameter, 0:width] = binary
+
+        # 在检测到的直径范围内，使用圆算子与二值图像进行乘运算
+        # 需要定位的黑色部分为0，不需要的白色部分为255，因为圆算子数值为1，只需求出两数组的哈达玛积，最小值即为黑色部分最多的位置，即为要定位的虹膜位置
+        bigHeight, bigWidth = bigBinary.shape[0:2]
+        minSum = sys.maxsize
+        centerX = 0
+        centerY = 0
+        for top in range(bigHeight - diameter):
+            mulArr = circleOperator * bigBinary[top:top + diameter, left:right]
+            index = np.sum(mulArr)
+            if minSum > index:
+                minSum = index
+                centerX = left + radius
+                centerY = top + radius
+
+        # 复制眼睛原图像以绘制圆
+        eyesImagePainted = eyeImage.copy()
+        cv2.circle(eyesImagePainted, (centerX, centerY - diameter), radius, RED, 1)
+
         return eyesImagePainted
