@@ -99,17 +99,25 @@ class Window(QWidget):
             self.timer.stop()
         else:
             haveFace, frame, eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, \
-            eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right \
+            eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right, leftBlink, rightBlink \
                 = self.tracking.track(self.frame, self.thresh)
             if haveFace:
                 self.display_image(self.opencv_to_qt(frame))
 
+                if leftBlink:
+                    self.findLabelbyName("leftBlink").setText("Blink")
+                else:
+                    self.findLabelbyName("leftBlink").setText("Open")
                 self.display_image(self.opencv_to_qt(eyeImage_left), window="eyeImage_left")
                 self.display_image(self.opencv_to_qt(redWeight_left), window="redWeight_left")
                 self.display_image(self.opencv_to_qt(histogram_left), window="histogram_left")
                 self.display_image(self.opencv_to_qt(binary_left), window="binary_left")
                 self.display_image(self.opencv_to_qt(trackingEye_left), window="tracking_left")
 
+                if rightBlink:
+                    self.findLabelbyName("rightBlink").setText("Blink")
+                else:
+                    self.findLabelbyName("rightBlink").setText("Open")
                 self.display_image(self.opencv_to_qt(eyeImage_right), window="eyeImage_right")
                 self.display_image(self.opencv_to_qt(redWeight_right), window="redWeight_right")
                 self.display_image(self.opencv_to_qt(histogram_right), window="histogram_right")

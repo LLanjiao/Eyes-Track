@@ -1,3 +1,5 @@
+import math
+
 import cv2
 import numpy as np
 import dlib
@@ -25,8 +27,8 @@ class eyes_tracking:
     def __init__(self):
         self.pointList = None  # 68特征点
         self.eyesPoints = None  # 眼睛坐标集
-        self.rightEyesPoints = None  # 右眼坐标集
-        self.leftEyesPoints = None  # 左眼坐标集
+        self.rightEyePoints = None  # 右眼坐标集
+        self.leftEyePoints = None  # 左眼坐标集
 
     def test(self, frame, thresh):
         faceLandmarkFrame = frame.copy()
@@ -63,18 +65,20 @@ class eyes_tracking:
             eyeImage_left, eyeImage_right = self.eyesFrameSplit(frame)
 
             # 左眼处理
+            leftBlink = self.blinkDetection(self.leftEyePoints)
             redWeight_left, histogram_left, binary_left = self.eyesFrameProcessing(eyeImage_left, thresh)
             trackingEye_left = self.irisDetectionByOperator(binary_left, eyeImage_left)
             # 右眼处理
+            rightBlink = self.blinkDetection(self.rightEyePoints)
             redWeight_right, histogram_right, binary_right = self.eyesFrameProcessing(eyeImage_right, thresh)
             trackingEye_right = self.irisDetectionByOperator(binary_right, eyeImage_right)
 
             return haveFace, faceLandmarkFrame, \
                    eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, \
-                   eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right
+                   eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right, leftBlink, rightBlink
         # 未检测到人脸，返回haceFace=False，其他值为None
         else:
-            return haveFace, frame, None, None, None, None, None, None, None, None, None, None
+            return haveFace, frame, None, None, None, None, None, None, None, None, None, None, None, None
 
     def eyesLandmarkPointsExtract(self, frame, isDrawRange=True, isDrawPoints=True):
         """
@@ -130,24 +134,24 @@ class eyes_tracking:
         eyesImage_tight：右眼图像
         """
         self.eyesPoints = self.pointList[36:48]
-        self.leftEyesPoints = self.pointList[36:42]
-        self.rightEyesPoints = self.pointList[42:48]
+        self.leftEyePoints = self.pointList[36:42]
+        self.rightEyePoints = self.pointList[42:48]
 
         # 左眼
-        lmaxX = (sorted(self.leftEyesPoints, key=lambda item: item[0], reverse=True))[0][0]
-        lminX = (sorted(self.leftEyesPoints, key=lambda item: item[0]))[0][0]
-        lmaxY = (sorted(self.leftEyesPoints, key=lambda item: item[1], reverse=True))[0][1]
-        lminY = (sorted(self.leftEyesPoints, key=lambda item: item[1]))[0][1]
+        lmaxX = (sorted(self.leftEyePoints, key=lambda item: item[0], reverse=True))[0][0]
+        lminX = (sorted(self.leftEyePoints, key=lambda item: item[0]))[0][0]
+        lmaxY = (sorted(self.leftEyePoints, key=lambda item: item[1], reverse=True))[0][1]
+        lminY = (sorted(self.leftEyePoints, key=lambda item: item[1]))[0][1]
         lx = (lmaxX - lminX) % 2
         ly = (lmaxY - lminY) % 2
         eyesImage_left = frame[lminY - ly:lmaxY + ly, lminX:lmaxX]
         eyesImage_left = cv2.resize(eyesImage_left, None, fx=3, fy=3, interpolation=cv2.INTER_AREA)
 
         # 右眼
-        rmaxX = (sorted(self.rightEyesPoints, key=lambda item: item[0], reverse=True))[0][0]
-        rminX = (sorted(self.rightEyesPoints, key=lambda item: item[0]))[0][0]
-        rmaxY = (sorted(self.rightEyesPoints, key=lambda item: item[1], reverse=True))[0][1]
-        rminY = (sorted(self.rightEyesPoints, key=lambda item: item[1]))[0][1]
+        rmaxX = (sorted(self.rightEyePoints, key=lambda item: item[0], reverse=True))[0][0]
+        rminX = (sorted(self.rightEyePoints, key=lambda item: item[0]))[0][0]
+        rmaxY = (sorted(self.rightEyePoints, key=lambda item: item[1], reverse=True))[0][1]
+        rminY = (sorted(self.rightEyePoints, key=lambda item: item[1]))[0][1]
         rx = (rmaxX - rminX) % 2
         ry = (rmaxY - rminY) % 2
         eyesImage_right = frame[rminY - ry:rmaxY + ry, rminX:rmaxX]
@@ -155,9 +159,51 @@ class eyes_tracking:
 
         return eyesImage_left, eyesImage_right
 
-    def blinkDetection(self):
+    def blinkDetection(self, eyePoints):
+        """
+        眨眼检测
+        求出眼上下眼睑特征点（左眼38-39和41-42，右眼44-45和48-47）中心点，求其距离
+        眨眼标准距离为上眼睑特征点的距离的一半
+        上下距离与标准距离对比，小于标准距离则判为眨眼
+        :param eyePoints: 眼睛特征点集
+        :return: 是否眨眼，True为眨眼，False为睁眼
+        """
+        isBlink = False
+        top = self.midPoint(eyePoints[1], eyePoints[2])
+        bottom = self.midPoint(eyePoints[4], eyePoints[5])
+        dis = self.pointDistance(top, bottom)
+        standard = self.pointDistance(eyePoints[1], eyePoints[2]) / 2
+        if dis < standard:
+            isBlink = True
+        return isBlink
 
-        pass
+    @staticmethod
+    def midPoint(point1, point2):
+        """
+        寻找平面两点连线的中心点
+        :param point1: 第一点
+        :param point2: 第二点
+        :return: pointOut输出中心点
+        """
+        x1, y1 = point1
+        x2, y2 = point2
+        x_out = int((x1 + x2) / 2)
+        y_out = int((y1 + y2) / 2)
+        point_out = (x_out, y_out)
+        return point_out
+
+    @staticmethod
+    def pointDistance(point1, point2):
+        """
+        使用勾股定理计算平面两点距离
+        :param point1: 第一点
+        :param point2: 第二点
+        :return: distance距离
+        """
+        x1, y1 = point1
+        x2, y2 = point2
+        distance = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        return distance
 
     @staticmethod
     def eyesFrameProcessing(eyesImage, thresh):
