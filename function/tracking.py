@@ -23,9 +23,9 @@ predictor = dlib.shape_predictor(str(settings.PREDICTOR_PATH))
 
 class eyes_tracking:
     def __init__(self):
-        self.pointList = None       # 68特征点
-        self.eyesPoints = None      # 眼睛坐标集
-        self.rightEyesPoints = None # 右眼坐标集
+        self.pointList = None  # 68特征点
+        self.eyesPoints = None  # 眼睛坐标集
+        self.rightEyesPoints = None  # 右眼坐标集
         self.leftEyesPoints = None  # 左眼坐标集
 
     def test(self, frame, thresh):
@@ -36,7 +36,6 @@ class eyes_tracking:
         left, right = self.irisDetectionByOperator(binary_left)
         print(left, right)
         return False, frame, None, None, None, None, None, None, None, None, None, None
-
 
     def track(self, frame, thresh):
         """
@@ -156,6 +155,10 @@ class eyes_tracking:
 
         return eyesImage_left, eyesImage_right
 
+    def blinkDetection(self):
+
+        pass
+
     @staticmethod
     def eyesFrameProcessing(eyesImage, thresh):
         """
@@ -198,7 +201,7 @@ class eyes_tracking:
         return eyesImage_blur_redWeight, eyesImage_blur_redWeight_histogram, eyesImage_blur_redWeight_histogram_binary
 
     @staticmethod
-    def irisDetection(binary, eyeImage):
+    def irisDetectionByHoughCircles(binary, eyeImage):
         """
         虹膜定位功能，目前使用霍夫圆直接检测
         待升级算法
@@ -222,8 +225,7 @@ class eyes_tracking:
                 cv2.circle(eyesImagePainted, (i[0], i[1]), 2, RED, 1)
         return eyesImagePainted
 
-    @staticmethod
-    def irisDetectionByOperator(binary, eyeImage):
+    def irisDetectionByOperator(self, binary, eyeImage):
         """
         使用圆算子算法检测虹膜
         需要定位的黑色部分为0，不需要的白色部分为255，因为圆算子数值为1，只需求出两数组的哈达玛积，最小值即为黑色部分最多的位置，即为要定位的虹膜位置
@@ -249,35 +251,54 @@ class eyes_tracking:
                     break
             if right != -1:
                 break
+
         # 直径
         diameter = right - left
+        # 半径
+        radius = diameter // 2
+        # 圆算子扫描图像
+        centerX, centerY = self.circleScan(binary, diameter)
+
+        # 复制眼睛原图像以绘制圆
+        eyesImagePainted = eyeImage.copy()
+        cv2.circle(eyesImagePainted, (centerX, centerY), radius, RED, 1)
+
+        return eyesImagePainted
+
+    @staticmethod
+    def circleScan(image, diameter=None):
+        """
+        圆算子检测灰度值最低的区域
+        需要将图片上下扩大以使圆算子能正确遍历，最后定位XY坐标时需进行相应处理以得到原图像的正确坐标
+
+        :param image: 待检测图像
+        :param diameter: 圆算子的直径
+        :return: 灰度值最低的圆的XY坐标
+        """
+        height, width = image.shape[0:2]
         # 半径
         radius = diameter // 2
 
         # 创建圆算子，背景为0，圆为1
         circleOperator = np.zeros((diameter, diameter), dtype=np.uint8)
-        cv2.circle(circleOperator, (radius, radius), radius, (1, ), -1)
+        cv2.circle(circleOperator, (radius, radius), radius, (1,), -1)
 
         # 原图像高度可能小于圆算子高度，对扩大图像以进行圆算子计算
-        bigBinary = np.zeros((height + diameter + diameter, width), dtype=np.uint8) + 255
-        bigBinary[diameter:height + diameter, 0:width] = binary
+        higherImg = np.zeros((height + diameter + diameter, width), dtype=np.uint8) + 255
+        higherImg[diameter:height + diameter, 0:width] = image
 
         # 在检测到的直径范围内，使用圆算子与二值图像进行乘运算
         # 需要定位的黑色部分为0，不需要的白色部分为255，因为圆算子数值为1，只需求出两数组的哈达玛积，最小值即为黑色部分最多的位置，即为要定位的虹膜位置
-        bigHeight, bigWidth = bigBinary.shape[0:2]
+        higherHeight, higherWidth = higherImg.shape[0:2]
         minSum = sys.maxsize
         centerX = 0
         centerY = 0
-        for top in range(bigHeight - diameter):
-            mulArr = circleOperator * bigBinary[top:top + diameter, left:right]
-            index = np.sum(mulArr)
-            if minSum > index:
-                minSum = index
-                centerX = left + radius
-                centerY = top + radius
-
-        # 复制眼睛原图像以绘制圆
-        eyesImagePainted = eyeImage.copy()
-        cv2.circle(eyesImagePainted, (centerX, centerY - diameter), radius, RED, 1)
-
-        return eyesImagePainted
+        for top in range(higherHeight - diameter):
+            for left in range(higherWidth - diameter):
+                mulArr = circleOperator * higherImg[top:top + diameter, left:left + diameter]
+                index = np.sum(mulArr)
+                if minSum > index:
+                    minSum = index
+                    centerX = left + radius
+                    centerY = top + radius - diameter
+        return centerX, centerY
