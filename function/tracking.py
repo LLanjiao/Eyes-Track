@@ -6,6 +6,7 @@ import dlib
 import sys
 
 from settings import settings
+sys.setrecursionlimit(3000)
 
 GREEN = (0, 255, 0)
 ORANGE = (255, 165, 0)
@@ -30,16 +31,13 @@ class eyes_tracking:
         self.rightEyePoints = None  # 右眼坐标集
         self.leftEyePoints = None  # 左眼坐标集
 
-    def test(self, frame, thresh):
-        faceLandmarkFrame = frame.copy()
-        haveFace = self.eyesLandmarkPointsExtract(faceLandmarkFrame)
-        eyeImage_left, eyeImage_right = self.eyesFrameSplit(frame)
-        redWeight_left, histogram_left, binary_left = self.eyesFrameProcessing(eyeImage_left, thresh)
-        left, right = self.irisDetectionByOperator(binary_left)
-        print(left, right)
-        return False, frame, None, None, None, None, None, None, None, None, None, None
+        self.leftX = None
+        self.leftY = None
+        self.rightX = None
+        self.rightY = None
+        self.binaryStandard = None
 
-    def track(self, frame, thresh):
+    def irisTrack(self, frame, thresh):
         """
         输入图像、二值化图像阈值并进行虹膜定位处理
 
@@ -67,18 +65,20 @@ class eyes_tracking:
             # 左眼处理
             leftBlink = self.blinkDetection(self.leftEyePoints)
             redWeight_left, histogram_left, binary_left = self.eyesFrameProcessing(eyeImage_left, thresh)
-            trackingEye_left = self.irisDetectionByOperator(binary_left, eyeImage_left)
+            trackingEye_left, self.leftX, self.leftY = self.irisDetectionByOperator(binary_left, eyeImage_left)
             # 右眼处理
             rightBlink = self.blinkDetection(self.rightEyePoints)
             redWeight_right, histogram_right, binary_right = self.eyesFrameProcessing(eyeImage_right, thresh)
-            trackingEye_right = self.irisDetectionByOperator(binary_right, eyeImage_right)
+            trackingEye_right, self.rightX, self.rightY = self.irisDetectionByOperator(binary_right, eyeImage_right)
 
             return haveFace, faceLandmarkFrame, \
-                   eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, \
-                   eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right, leftBlink, rightBlink
-        # 未检测到人脸，返回haceFace=False，其他值为None
+                eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, leftBlink, \
+                eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right, rightBlink,
+        # 未检测到人脸，返回haveFace=False，其他值为None
         else:
-            return haveFace, frame, None, None, None, None, None, None, None, None, None, None, None, None
+            return haveFace, frame, \
+                   None, None, None, None, None, None, \
+                   None, None, None, None, None, None
 
     def eyesLandmarkPointsExtract(self, frame, isDrawRange=True, isDrawPoints=True):
         """
@@ -142,7 +142,6 @@ class eyes_tracking:
         lminX = (sorted(self.leftEyePoints, key=lambda item: item[0]))[0][0]
         lmaxY = (sorted(self.leftEyePoints, key=lambda item: item[1], reverse=True))[0][1]
         lminY = (sorted(self.leftEyePoints, key=lambda item: item[1]))[0][1]
-        lx = (lmaxX - lminX) % 2
         ly = (lmaxY - lminY) % 2
         eyesImage_left = frame[lminY - ly:lmaxY + ly, lminX:lmaxX]
         eyesImage_left = cv2.resize(eyesImage_left, None, fx=3, fy=3, interpolation=cv2.INTER_AREA)
@@ -152,7 +151,6 @@ class eyes_tracking:
         rminX = (sorted(self.rightEyePoints, key=lambda item: item[0]))[0][0]
         rmaxY = (sorted(self.rightEyePoints, key=lambda item: item[1], reverse=True))[0][1]
         rminY = (sorted(self.rightEyePoints, key=lambda item: item[1]))[0][1]
-        rx = (rmaxX - rminX) % 2
         ry = (rmaxY - rminY) % 2
         eyesImage_right = frame[rminY - ry:rmaxY + ry, rminX:rmaxX]
         eyesImage_right = cv2.resize(eyesImage_right, None, fx=3, fy=3, interpolation=cv2.INTER_AREA)
@@ -205,8 +203,7 @@ class eyes_tracking:
         distance = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
         return distance
 
-    @staticmethod
-    def eyesFrameProcessing(eyesImage, thresh):
+    def eyesFrameProcessing(self, eyesImage, thresh):
         """
         图像处理：
         1.高斯模糊处理
@@ -228,23 +225,85 @@ class eyes_tracking:
         # 直方图均衡化
         eyesImage_blur_redWeight_histogram = cv2.equalizeHist(eyesImage_blur_redWeight)
 
-        # 二值化处理
-        height, width = eyesImage_blur_redWeight_histogram.shape[0:2]
+        eyesImage_blur_redWeight_histogram_binary = self.binarybyCoarsePositioning(eyesImage_blur_redWeight_histogram, thresh)
+
+        return eyesImage_blur_redWeight, eyesImage_blur_redWeight_histogram, eyesImage_blur_redWeight_histogram_binary
+
+    @staticmethod
+    def binarybyDirectCompare(gray, thresh):
+        """
+        直接计算对比灰度值进行二值化处理
+        搜寻整张灰度图像，高于阈值的像素设为白色，低于阈值的设为黑色
+        :param gray: 灰度图像
+        :param thresh: 二值化阈值
+        :return: binary二值化图像
+        """
+        height, width = gray.shape[0:2]
         # 复制一张图片用以遍历二值化
-        eyesImage_blur_redWeight_histogram_binary = eyesImage_blur_redWeight_histogram.copy()
+        binary = gray.copy()
+
         # 遍历每一个像素点
         for row in range(height):
             for col in range(width):
                 # 获取到灰度值
-                gray = eyesImage_blur_redWeight_histogram[row, col]
+                grayscale = gray[row, col]
                 # 如果灰度值高于阈值 就等于255,白色
-                if gray > thresh:
-                    eyesImage_blur_redWeight_histogram_binary[row, col] = 255
+                if grayscale > thresh:
+                    binary[row, col] = 255
                 # 如果小于阈值，就直接改为0，黑色
-                elif gray < thresh:
-                    eyesImage_blur_redWeight_histogram_binary[row, col] = 0
+                elif grayscale < thresh:
+                    binary[row, col] = 0
+        return binary
 
-        return eyesImage_blur_redWeight, eyesImage_blur_redWeight_histogram, eyesImage_blur_redWeight_histogram_binary
+    def binarybyCoarsePositioning(self, gray, thresh):
+        """
+        粗定位与递归扩散法二值化图像
+        先使用圆算子粗定位虹膜中心，再通过递归扩散算法于粗定位中心向四周扩散进行二值化
+        :param gray: 灰度图像
+        :param thresh: 二值化阈值
+        :return: binary二值化图像
+        """
+        height, width = gray.shape[0:2]
+        binary = np.zeros((gray.shape[0], gray.shape[1]), dtype=np.uint8) + 255
+        diameter = height
+        coarseX, coarseY = self.circleScan(gray, diameter)
+        # numpy数组中对应的x、y应为array[y, x]
+        self.binaryStandard = gray[coarseY, coarseX]
+        self.binaryRecursion(gray, coarseX, coarseY, binary, thresh)
+        return binary
+
+    def binaryRecursion(self, gray, x, y, binary, thresh):
+        """
+        递归扩散算法
+        向粗定位点的右、下、左、上搜寻，
+        灰度值与粗定位点灰度值之差小于阈值的像素坐标在复制的纯白画布上设为黑色
+        :param gray: 灰度图像
+        :param x: 横坐标-array[y, x]
+        :param y: 纵坐标-array[y, x]
+        :param binary: 二值化图像
+        :param thresh: 阈值
+        :return:
+        """
+        if int(gray[y, x]) - int(self.binaryStandard) < thresh:
+            binary[y, x] = 0
+        else:
+            return
+        if x + 1 < binary.shape[1]:
+            if binary[y, x + 1] != 0:
+                self.binaryRecursion(gray, x + 1, y, binary, thresh)
+        if y + 1 < binary.shape[0]:
+            if binary[y + 1, x] != 0:
+                self.binaryRecursion(gray, x, y + 1, binary, thresh)
+        if x - 1 > 0:
+            if binary[y, x - 1] != 0:
+                self.binaryRecursion(gray, x - 1, y, binary, thresh)
+        if y - 1 > 0:
+            if binary[y - 1, x] != 0:
+                self.binaryRecursion(gray, x, y - 1, binary, thresh)
+
+    def reflectLightRemove(self, binary):
+
+        pass
 
     @staticmethod
     def irisDetectionByHoughCircles(binary, eyeImage):
@@ -277,7 +336,10 @@ class eyes_tracking:
         需要定位的黑色部分为0，不需要的白色部分为255，因为圆算子数值为1，只需求出两数组的哈达玛积，最小值即为黑色部分最多的位置，即为要定位的虹膜位置
         :param binary: 二值化图像
         :param eyeImage: 眼睛的原图像
-        :return: eyesImagePainted绘制出检测的虹膜位置的眼睛图像
+        :return:
+        eyesImagePainted绘制出检测的虹膜位置的眼睛图像
+        centerX中心点x坐标
+        centerY中心点y坐标
         """
         height, width = binary.shape[0:2]
         left = -1
@@ -307,9 +369,8 @@ class eyes_tracking:
 
         # 复制眼睛原图像以绘制圆
         eyesImagePainted = eyeImage.copy()
-        cv2.circle(eyesImagePainted, (centerX, centerY), radius, RED, 1)
-
-        return eyesImagePainted
+        cv2.circle(eyesImagePainted, (centerX, centerY), radius, GREEN, 1)
+        return eyesImagePainted, centerX, centerY
 
     @staticmethod
     def circleScan(image, diameter=None):
