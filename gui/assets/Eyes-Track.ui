@@ -16,58 +16,39 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="1" column="1">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="2">
-      <layout class="QHBoxLayout" name="cameraLayout">
+     <item row="1" column="3">
+      <layout class="QHBoxLayout" name="fileLayout">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QComboBox" name="cameraChoose">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="editable">
-            <bool>false</bool>
-           </property>
-           <property name="currentText">
-            <string>computerCamera</string>
-           </property>
-           <property name="maxVisibleItems">
-            <number>10</number>
-           </property>
-           <property name="insertPolicy">
-            <enum>QComboBox::InsertAtBottom</enum>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>16</width>
-             <height>16</height>
-            </size>
-           </property>
-           <item>
-            <property name="text">
-             <string>computerCamera</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>phoneCamera</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="camera">
-           <property name="text">
-            <string>openCamera</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QPushButton" name="openFile">
+         <property name="text">
+          <string>openFile</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="stop">
+         <property name="text">
+          <string>stop</string>
+         </property>
+        </widget>
        </item>
       </layout>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="faceFrame">
+       <property name="mouseTracking">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid black;</string>
+       </property>
+       <property name="text">
+        <string>faceFrame</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="0" column="3">
       <layout class="QVBoxLayout" name="viewLayout">
@@ -217,40 +198,6 @@
        </item>
       </layout>
      </item>
-     <item row="1" column="3">
-      <layout class="QHBoxLayout" name="fileLayout">
-       <item>
-        <widget class="QPushButton" name="openFile">
-         <property name="text">
-          <string>openFile</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="stop">
-         <property name="text">
-          <string>stop</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="2">
-      <widget class="QLabel" name="faceFrame">
-       <property name="mouseTracking">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">border: 1px solid black;</string>
-       </property>
-       <property name="text">
-        <string>faceFrame</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="0">
       <widget class="QSlider" name="threshSlider">
        <property name="value">
@@ -258,6 +205,66 @@
        </property>
        <property name="orientation">
         <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <layout class="QHBoxLayout" name="cameraLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QComboBox" name="cameraChoose">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="currentText">
+            <string>computerCamera</string>
+           </property>
+           <property name="maxVisibleItems">
+            <number>10</number>
+           </property>
+           <property name="insertPolicy">
+            <enum>QComboBox::InsertAtBottom</enum>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>computerCamera</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>phoneCamera</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="camera">
+           <property name="text">
+            <string>openCamera</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item row="2" column="3">
+      <widget class="QPushButton" name="locate">
+       <property name="text">
+        <string>locate</string>
        </property>
       </widget>
      </item>
