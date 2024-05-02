@@ -2,15 +2,14 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from gui.application_window import Window
+from gui.application_mainWindow import MainWindow
 
 from settings import settings
 
 
 if __name__ == "__main__":
-    print(settings.CASES_FILE_PATH)
     app = QApplication(sys.argv)
-    window = Window()
+    window = MainWindow()
     window.setWindowTitle("Eye Tracking")
     window.show()
     sys.exit(app.exec())
