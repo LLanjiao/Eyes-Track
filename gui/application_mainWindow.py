@@ -1,32 +1,36 @@
 import warnings
-import warnings
 
-import cv2
 import numpy
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QFileDialog, QSlider, QComboBox
+from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QFileDialog, QSlider, QComboBox, QRadioButton
 from PyQt6.uic import loadUi
 
 from frame_sources.camera import camera
 from frame_sources.image import image
 from frame_sources.video import video
 from function.tracking import eyes_tracking
+from gui.application_locateWindow import LocateWindow
 from settings import settings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-class Window(QWidget):
+class MainWindow(QWidget):
     camera: QPushButton
     openFile: QPushButton
     stop: QPushButton
     threshSlider: QSlider
     cameraChoose: QComboBox
+    locate: QPushButton
+    useDirectCompare: QRadioButton
+    useCoarsePositioning: QRadioButton
+    useHoughCircles: QRadioButton
+    useOperator: QRadioButton
 
     def __init__(self):
-        super(Window, self).__init__()
-        loadUi(settings.GUI_FILE_PATH, self)
+        super(MainWindow, self).__init__()
+        loadUi(settings.MAINWINDOW_GUI_FILE_PATH, self)
 
         self.filePath = None
         self.fileType = None
@@ -37,12 +41,22 @@ class Window(QWidget):
         self.isCameraOpening = False
         self.isPlaying = False
         self.thresh = 50
+        self.binaryMethod = "useDirectCompare"
+        self.trackMethod = "useHoughCircles"
         self.tracking = eyes_tracking()
+
+        self.locateWindow = None
 
         self.camera.clicked.connect(self.cameraController)
         self.openFile.clicked.connect(self.fileChoose)
         self.stop.clicked.connect(self.stopPlay)
         self.threshSlider.valueChanged.connect(self.threshChange)
+        self.locate.clicked.connect(self.openLocate)
+
+        self.useDirectCompare.toggled.connect(lambda: self.binaryMethodToggled(self.useDirectCompare))
+        self.useCoarsePositioning.toggled.connect(lambda: self.binaryMethodToggled(self.useCoarsePositioning))
+        self.useHoughCircles.toggled.connect(lambda :self.trackMethodToggled(self.useHoughCircles))
+        self.useOperator.toggled.connect(lambda :self.trackMethodToggled(self.useOperator))
 
     def cameraController(self):
         if self.isCameraOpening:
@@ -91,16 +105,16 @@ class Window(QWidget):
         self.timer.timeout.connect(self.nextFrame)
         self.timer.start(settings.REFRESH_PERIOD)
         self.isPlaying = True
-        # self.nextFrame()
 
     def nextFrame(self):
         ret, self.frame = self.frameSources.next_frame()
         if not ret:
             self.timer.stop()
         else:
-            haveFace, frame, eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, \
-            eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right, leftBlink, rightBlink \
-                = self.tracking.track(self.frame, self.thresh)
+            haveFace, frame, \
+                eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, leftBlink, \
+                eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right, rightBlink \
+                = self.tracking.irisTrack(self.frame, self.binaryMethod, self.trackMethod, self.thresh)
             if haveFace:
                 self.display_image(self.opencv_to_qt(frame))
 
@@ -182,3 +196,18 @@ class Window(QWidget):
 
     def threshChange(self):
         self.thresh = self.threshSlider.value()
+
+    def openLocate(self):
+        self.locateWindow = LocateWindow(self.tracking)
+        self.locateWindow.setWindowTitle("locate")
+        self.locateWindow.showFullScreen()
+
+    def binaryMethodToggled(self, choice):
+        if choice.isChecked():
+            self.binaryMethod = choice.text()
+
+    def trackMethodToggled(self, choice):
+        if choice.isChecked():
+            self.trackMethod = choice.text()
+
+

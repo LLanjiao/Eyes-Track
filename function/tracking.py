@@ -31,17 +31,15 @@ class eyes_tracking:
         self.rightEyePoints = None  # 右眼坐标集
         self.leftEyePoints = None  # 左眼坐标集
 
-        self.leftX = None
-        self.leftY = None
-        self.rightX = None
-        self.rightY = None
         self.binaryStandard = None
 
-    def irisTrack(self, frame, thresh):
+    def irisTrack(self, frame, binaryMethod, trackMethod, thresh):
         """
         输入图像、二值化图像阈值并进行虹膜定位处理
 
         :param frame: 待处理的图像
+        :param binaryMethod: 二值化处理使用的方法
+        :param trackMethod: 虹膜定位使用的方法
         :param thresh: 二值化的阈值
         :return:
         haveFace：是否检测到人脸，如False，则不进行图像变换处理，直接进行返回，其他值的返回均为None
@@ -64,12 +62,12 @@ class eyes_tracking:
 
             # 左眼处理
             leftBlink = self.blinkDetection(self.leftEyePoints)
-            redWeight_left, histogram_left, binary_left = self.eyesFrameProcessing(eyeImage_left, thresh)
-            trackingEye_left, self.leftX, self.leftY = self.irisDetectionByOperator(binary_left, eyeImage_left)
+            redWeight_left, histogram_left, binary_left = self.eyesFrameProcessing(eyeImage_left, binaryMethod, thresh)
+            trackingEye_left = self.irisDetection(binary_left, trackMethod, eyeImage_left)
             # 右眼处理
             rightBlink = self.blinkDetection(self.rightEyePoints)
-            redWeight_right, histogram_right, binary_right = self.eyesFrameProcessing(eyeImage_right, thresh)
-            trackingEye_right, self.rightX, self.rightY = self.irisDetectionByOperator(binary_right, eyeImage_right)
+            redWeight_right, histogram_right, binary_right = self.eyesFrameProcessing(eyeImage_right, binaryMethod, thresh)
+            trackingEye_right = self.irisDetection(binary_right, trackMethod, eyeImage_right)
 
             return haveFace, faceLandmarkFrame, \
                 eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, leftBlink, \
@@ -203,7 +201,7 @@ class eyes_tracking:
         distance = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
         return distance
 
-    def eyesFrameProcessing(self, eyesImage, thresh):
+    def eyesFrameProcessing(self, eyesImage, binaryMethod, thresh):
         """
         图像处理：
         1.高斯模糊处理
@@ -224,8 +222,11 @@ class eyes_tracking:
         blue, green, eyesImage_blur_redWeight = cv2.split(eyesImage_blur, mv=None)
         # 直方图均衡化
         eyesImage_blur_redWeight_histogram = cv2.equalizeHist(eyesImage_blur_redWeight)
-
-        eyesImage_blur_redWeight_histogram_binary = self.binarybyCoarsePositioning(eyesImage_blur_redWeight_histogram, thresh)
+        eyesImage_blur_redWeight_histogram_binary = None
+        if binaryMethod == "useDirectCompare":
+            eyesImage_blur_redWeight_histogram_binary = self.binarybyDirectCompare(eyesImage_blur_redWeight_histogram, thresh)
+        elif binaryMethod == "useCoarsePositioning":
+            eyesImage_blur_redWeight_histogram_binary = self.binarybyCoarsePositioning(eyesImage_blur_redWeight_histogram, thresh)
 
         return eyesImage_blur_redWeight, eyesImage_blur_redWeight_histogram, eyesImage_blur_redWeight_histogram_binary
 
@@ -301,9 +302,13 @@ class eyes_tracking:
             if binary[y - 1, x] != 0:
                 self.binaryRecursion(gray, x, y - 1, binary, thresh)
 
-    def reflectLightRemove(self, binary):
-
-        pass
+    def irisDetection(self, binary, trackMethod, eyeImage):
+        eyesImagePainted = None
+        if trackMethod == "useHoughCircles":
+            eyesImagePainted = self.irisDetectionByHoughCircles(binary, eyeImage)
+        elif trackMethod == "useOperator":
+            eyesImagePainted = self.irisDetectionByOperator(binary, eyeImage)
+        return eyesImagePainted
 
     @staticmethod
     def irisDetectionByHoughCircles(binary, eyeImage):
@@ -370,7 +375,7 @@ class eyes_tracking:
         # 复制眼睛原图像以绘制圆
         eyesImagePainted = eyeImage.copy()
         cv2.circle(eyesImagePainted, (centerX, centerY), radius, GREEN, 1)
-        return eyesImagePainted, centerX, centerY
+        return eyesImagePainted
 
     @staticmethod
     def circleScan(image, diameter=None):
