@@ -42,7 +42,7 @@ class MainWindow(QWidget):
         self.isPlaying = False
         self.thresh = 50
         self.binaryMethod = "useDirectCompare"
-        self.trackMethod = "useHoughCircles"
+        self.irisDetectionMethod = "useHoughCircles"
         self.tracking = eyes_tracking()
 
         self.locateWindow = None
@@ -55,20 +55,20 @@ class MainWindow(QWidget):
 
         self.useDirectCompare.toggled.connect(lambda: self.binaryMethodToggled(self.useDirectCompare))
         self.useCoarsePositioning.toggled.connect(lambda: self.binaryMethodToggled(self.useCoarsePositioning))
-        self.useHoughCircles.toggled.connect(lambda :self.trackMethodToggled(self.useHoughCircles))
-        self.useOperator.toggled.connect(lambda :self.trackMethodToggled(self.useOperator))
+        self.useHoughCircles.toggled.connect(lambda: self.irisDetectionMethodToggled(self.useHoughCircles))
+        self.useOperator.toggled.connect(lambda: self.irisDetectionMethodToggled(self.useOperator))
 
     def cameraController(self):
         if self.isCameraOpening:
             self.isCameraOpening = False
             self.cameraType = None
-            self.camera.setText("openCamera")
+            self.camera.setText("打开摄像头")
             self.stopPlay()
         else:
             self.isCameraOpening = True
             self.fileType = "camera"
             self.cameraType = self.cameraChoose.currentText()
-            self.camera.setText("closeCamera")
+            self.camera.setText("关闭摄像头")
             self.play()
 
     def fileChoose(self):
@@ -114,29 +114,29 @@ class MainWindow(QWidget):
             haveFace, frame, \
                 eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, leftBlink, \
                 eyeImage_right, redWeight_right, histogram_right, binary_right, trackingEye_right, rightBlink \
-                = self.tracking.irisTrack(self.frame, self.binaryMethod, self.trackMethod, self.thresh)
+                = self.tracking.irisTrack(self.frame, self.binaryMethod, self.irisDetectionMethod, self.thresh)
             if haveFace:
                 self.display_image(self.opencv_to_qt(frame))
 
                 if leftBlink:
-                    self.findLabelbyName("leftBlink").setText("Blink")
+                    self.findLabelByName("leftBlink").setText("Blink")
                 else:
-                    self.findLabelbyName("leftBlink").setText("Open")
+                    self.findLabelByName("leftBlink").setText("Open")
                 self.display_image(self.opencv_to_qt(eyeImage_left), window="eyeImage_left")
                 self.display_image(self.opencv_to_qt(redWeight_left), window="redWeight_left")
                 self.display_image(self.opencv_to_qt(histogram_left), window="histogram_left")
                 self.display_image(self.opencv_to_qt(binary_left), window="binary_left")
-                self.display_image(self.opencv_to_qt(trackingEye_left), window="tracking_left")
+                self.display_image(self.opencv_to_qt(trackingEye_left), window="irisDetection_left")
 
                 if rightBlink:
-                    self.findLabelbyName("rightBlink").setText("Blink")
+                    self.findLabelByName("rightBlink").setText("Blink")
                 else:
-                    self.findLabelbyName("rightBlink").setText("Open")
+                    self.findLabelByName("rightBlink").setText("Open")
                 self.display_image(self.opencv_to_qt(eyeImage_right), window="eyeImage_right")
                 self.display_image(self.opencv_to_qt(redWeight_right), window="redWeight_right")
                 self.display_image(self.opencv_to_qt(histogram_right), window="histogram_right")
                 self.display_image(self.opencv_to_qt(binary_right), window="binary_right")
-                self.display_image(self.opencv_to_qt(trackingEye_right), window="tracking_right")
+                self.display_image(self.opencv_to_qt(trackingEye_right), window="irisDetection_right")
             else:
                 self.display_image(self.opencv_to_qt(frame))
 
@@ -144,18 +144,18 @@ class MainWindow(QWidget):
         if self.isPlaying:
             self.frameSources.stop()
             self.timer.stop()
-            self.findLabelbyName("faceFrame").setText("faceFrame")
-            self.findLabelbyName("eyeImage_left").setText("eyeImage_left")
-            self.findLabelbyName("redWeight_left").setText("redWeight_left")
-            self.findLabelbyName("histogram_left").setText("histogram_left")
-            self.findLabelbyName("binary_left").setText("binary_left")
-            self.findLabelbyName("tracking_left").setText("tracking_left")
+            self.findLabelByName("faceFrame").setText("原图像")
+            self.findLabelByName("eyeImage_left").setText("眼部图像-左眼")
+            self.findLabelByName("redWeight_left").setText("红色分量-左眼")
+            self.findLabelByName("histogram_left").setText("降噪处理的灰度图像-左眼")
+            self.findLabelByName("binary_left").setText("二值化图像-左眼")
+            self.findLabelByName("irisDetection_left").setText("虹膜定位-左眼")
 
-            self.findLabelbyName("eyeImage_right").setText("eyesImage_right")
-            self.findLabelbyName("redWeight_right").setText("redWeight_right")
-            self.findLabelbyName("histogram_right").setText("histogram_right")
-            self.findLabelbyName("binary_right").setText("binary_right")
-            self.findLabelbyName("tracking_right").setText("tracking_right")
+            self.findLabelByName("eyeImage_right").setText("眼部图像-右眼")
+            self.findLabelByName("redWeight_right").setText("红色分量-右眼")
+            self.findLabelByName("histogram_right").setText("降噪处理的灰度图像-右眼")
+            self.findLabelByName("binary_right").setText("二值化图像-右眼")
+            self.findLabelByName("irisDetection_right").setText("虹膜定位-右眼")
 
             self.filePath = None
             self.fileType = None
@@ -184,11 +184,11 @@ class MainWindow(QWidget):
         """
         显示图片
         """
-        display_label = self.findLabelbyName(window)
+        display_label = self.findLabelByName(window)
         display_label.setPixmap(QPixmap.fromImage(img))
         display_label.setScaledContents(True)
 
-    def findLabelbyName(self, window):
+    def findLabelByName(self, window):
         resLabel: QLabel = getattr(self, window, None)
         if resLabel is None:
             raise ValueError(f"No such display window in gui: {window}")
@@ -204,10 +204,8 @@ class MainWindow(QWidget):
 
     def binaryMethodToggled(self, choice):
         if choice.isChecked():
-            self.binaryMethod = choice.text()
+            self.binaryMethod = choice.objectName()
 
-    def trackMethodToggled(self, choice):
+    def irisDetectionMethodToggled(self, choice):
         if choice.isChecked():
-            self.trackMethod = choice.text()
-
-
+            self.irisDetectionMethod = choice.objectName()

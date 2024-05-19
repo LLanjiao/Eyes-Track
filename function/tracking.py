@@ -31,15 +31,21 @@ class eyes_tracking:
         self.rightEyePoints = None  # 右眼坐标集
         self.leftEyePoints = None  # 左眼坐标集
 
+        self.haveFace = False
+        self.leftX = None
+        self.leftY = None
+        self.rightX = None
+        self.rightY = None
+
         self.binaryStandard = None
 
-    def irisTrack(self, frame, binaryMethod, trackMethod, thresh):
+    def irisTrack(self, frame, binaryMethod, irisDetectionMethod, thresh):
         """
         输入图像、二值化图像阈值并进行虹膜定位处理
 
         :param frame: 待处理的图像
         :param binaryMethod: 二值化处理使用的方法
-        :param trackMethod: 虹膜定位使用的方法
+        :param irisDetectionMethod: 虹膜定位使用的方法
         :param thresh: 二值化的阈值
         :return:
         haveFace：是否检测到人脸，如False，则不进行图像变换处理，直接进行返回，其他值的返回均为None
@@ -55,6 +61,7 @@ class eyes_tracking:
         faceLandmarkFrame = frame.copy()
         # 人脸检测
         haveFace = self.eyesLandmarkPointsExtract(faceLandmarkFrame)
+        self.haveFace = haveFace
         # 检测到人脸即进入人眼提取和处理
         if haveFace:
             # 左右眼提取
@@ -63,11 +70,11 @@ class eyes_tracking:
             # 左眼处理
             leftBlink = self.blinkDetection(self.leftEyePoints)
             redWeight_left, histogram_left, binary_left = self.eyesFrameProcessing(eyeImage_left, binaryMethod, thresh)
-            trackingEye_left = self.irisDetection(binary_left, trackMethod, eyeImage_left)
+            trackingEye_left, self.leftX, self.leftY = self.irisDetection(binary_left, irisDetectionMethod, eyeImage_left)
             # 右眼处理
             rightBlink = self.blinkDetection(self.rightEyePoints)
             redWeight_right, histogram_right, binary_right = self.eyesFrameProcessing(eyeImage_right, binaryMethod, thresh)
-            trackingEye_right = self.irisDetection(binary_right, trackMethod, eyeImage_right)
+            trackingEye_right, self.rightX, self.rightY = self.irisDetection(binary_right, irisDetectionMethod, eyeImage_right)
 
             return haveFace, faceLandmarkFrame, \
                 eyeImage_left, redWeight_left, histogram_left, binary_left, trackingEye_left, leftBlink, \
@@ -78,7 +85,7 @@ class eyes_tracking:
                    None, None, None, None, None, None, \
                    None, None, None, None, None, None
 
-    def eyesLandmarkPointsExtract(self, frame, isDrawRange=True, isDrawPoints=True):
+    def eyesLandmarkPointsExtract(self, frame, isDrawRange=False, isDrawPoints=True):
         """
         检测输入中图像的人脸部分，检测68特征点
         并通过输入isDrawRange和isDrawPoints参数选择是否在图像上绘出
@@ -104,7 +111,7 @@ class eyes_tracking:
             # 绘制框
             if isDrawRange:
                 # cv.rectangle 在image 上通过对角点绘制矩形，设置颜色，框粗细
-                cv2.rectangle(frame, cord_face1, cord_face2, GREEN, 2)
+                cv2.rectangle(frame, cord_face1, cord_face2, YELLOW, 2)
         # 未检测到人脸则直接返回False
         if face is None:
             return False
@@ -118,7 +125,7 @@ class eyes_tracking:
             pointList.append(point)
             if isDrawPoints:
                 # cv.circle在image 上以给定圆心和半径作圆
-                cv2.circle(frame, point, 1, ORANGE, 1)
+                cv2.circle(frame, point, 3, BLACK, 1)
         self.pointList = pointList
         return True
 
@@ -210,6 +217,7 @@ class eyes_tracking:
         4.二值化处理
 
         :param eyesImage: 眼睛图像（左/右眼）
+        :param binaryMethod: 二值化方法
         :param thresh: 二值化阈值
         :return:
         eyesImage_blur_redWeight：红色分量图像
@@ -302,27 +310,34 @@ class eyes_tracking:
             if binary[y - 1, x] != 0:
                 self.binaryRecursion(gray, x, y - 1, binary, thresh)
 
-    def irisDetection(self, binary, trackMethod, eyeImage):
+    def irisDetection(self, binary, irisDetectionMethod, eyeImage):
         eyesImagePainted = None
-        if trackMethod == "useHoughCircles":
-            eyesImagePainted = self.irisDetectionByHoughCircles(binary, eyeImage)
-        elif trackMethod == "useOperator":
-            eyesImagePainted = self.irisDetectionByOperator(binary, eyeImage)
-        return eyesImagePainted
+        x = None
+        y = None
+        if irisDetectionMethod == "useHoughCircles":
+            eyesImagePainted, x, y, radius = self.irisDetectionByHoughCircles(binary, eyeImage)
+        elif irisDetectionMethod == "useOperator":
+            eyesImagePainted, x, y, radius = self.irisDetectionByOperator(binary, eyeImage)
+
+        return eyesImagePainted, x, y
 
     @staticmethod
     def irisDetectionByHoughCircles(binary, eyeImage):
         """
-        虹膜定位功能，目前使用霍夫圆直接检测
-        待升级算法
+        虹膜定位功能，使用霍夫圆直接检测
 
         :param binary: 眼部二值化图像
         :param eyeImage: 眼部原图像
         :return: eyesImagePainted绘制虹膜后的眼部图像
+        x虹膜中心点x坐标
+        y虹膜中心点y坐标
         """
         height, width = binary.shape[0:2]
         minRadius = int(height / 10)
         maxRadius = int(height / 10)
+        x = None
+        y = None
+        radius = None
 
         canny = 100
         circles = cv2.HoughCircles(binary, cv2.HOUGH_GRADIENT, 1, 500, param1=canny, param2=5, minRadius=minRadius * 0,
@@ -333,12 +348,16 @@ class eyes_tracking:
             for i in circles[0, :]:
                 cv2.circle(eyesImagePainted, (i[0], i[1]), i[2], RED, 1)  # 在原图上画圆，圆心，半径，颜色，线框
                 cv2.circle(eyesImagePainted, (i[0], i[1]), 2, RED, 1)
-        return eyesImagePainted
+                x = i[0]
+                y = i[1]
+                radius = i[2]
+        return eyesImagePainted, x, y, radius
 
     def irisDetectionByOperator(self, binary, eyeImage):
         """
         使用圆算子算法检测虹膜
         需要定位的黑色部分为0，不需要的白色部分为255，因为圆算子数值为1，只需求出两数组的哈达玛积，最小值即为黑色部分最多的位置，即为要定位的虹膜位置
+
         :param binary: 二值化图像
         :param eyeImage: 眼睛的原图像
         :return:
@@ -375,7 +394,7 @@ class eyes_tracking:
         # 复制眼睛原图像以绘制圆
         eyesImagePainted = eyeImage.copy()
         cv2.circle(eyesImagePainted, (centerX, centerY), radius, GREEN, 1)
-        return eyesImagePainted
+        return eyesImagePainted, centerX, centerY, radius
 
     @staticmethod
     def circleScan(image, diameter=None):
@@ -414,3 +433,11 @@ class eyes_tracking:
                     centerX = left + radius
                     centerY = top + radius - diameter
         return centerX, centerY
+
+    def gazeAreaTrack(self, topLeft, topRight, bottomLeft, bottomRight, gazePoint):
+        length = topRight[0] - topLeft[0]
+        midX = topLeft[0] + length
+        if gazePoint[0] < midX:
+            return "left"
+        elif gazePoint[0] >= midX:
+            return "right"

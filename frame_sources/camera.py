@@ -11,9 +11,9 @@ class camera(frameSources):
         self.getCamera = None
 
     def start(self):
-        if self.cameraType == "computerCamera":
+        if self.cameraType == "使用电脑摄像头":
             self.getCamera = cv2.VideoCapture(0)
-        elif self.cameraType == "phoneCamera":
+        elif self.cameraType == "使用网络摄像头":
             self.getCamera = cv2.VideoCapture()
             self.getCamera.open(self.phoneCameraURL)
 

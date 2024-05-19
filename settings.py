@@ -13,6 +13,7 @@ class Settings:
 
     MAINWINDOW_GUI_FILE_PATH: Path = e("MAINWINDOW_GUI_FILE_PATH", ASSETS / "Eyes-Track.ui")
     LOCATEWINDOW_GUI_FILE_PATH: Path = e("LOCATEWINDOW_GUI_FILE_PATH", ASSETS / "locate.ui")
+    TRACKWINDOW_GUI_FILE_PATH: Path = e("TRACKWINDOW_GUI_FILE_PATH", ASSETS / "track.ui")
 
     CASES_FILE_PATH = e("CASES_FILE_PATH", BASE_DIR / "resources")
     PREDICTOR_PATH = e("PREDICTOR_PATH", BASE_DIR / "predictor" / "shape_predictor_68_face_landmarks.dat")

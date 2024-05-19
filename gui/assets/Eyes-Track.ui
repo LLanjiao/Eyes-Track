@@ -25,7 +25,7 @@
         <string notr="true">border: 1px solid black;</string>
        </property>
        <property name="text">
-        <string>faceFrame</string>
+        <string>原图像</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -37,14 +37,14 @@
        <item>
         <widget class="QPushButton" name="openFile">
          <property name="text">
-          <string>openFile</string>
+          <string>打开文件</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="stop">
          <property name="text">
-          <string>stop</string>
+          <string>停止</string>
          </property>
         </widget>
        </item>
@@ -91,7 +91,7 @@
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>eyeImage_left</string>
+            <string>眼部图像-左眼</string>
            </property>
           </widget>
          </item>
@@ -101,7 +101,7 @@
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>eyeImage_right</string>
+            <string>眼部图像-右眼</string>
            </property>
           </widget>
          </item>
@@ -115,7 +115,7 @@
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>redWeight_left</string>
+            <string>红色分量-左眼</string>
            </property>
           </widget>
          </item>
@@ -125,7 +125,7 @@
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>redWeight_right</string>
+            <string>红色分量-右眼</string>
            </property>
           </widget>
          </item>
@@ -139,7 +139,7 @@
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>histogram_left</string>
+            <string>降噪处理的灰度图像-左眼</string>
            </property>
           </widget>
          </item>
@@ -149,7 +149,7 @@
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>histogram_right</string>
+            <string>降噪处理的灰度图像-右眼</string>
            </property>
           </widget>
          </item>
@@ -163,7 +163,7 @@
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>binary_left</string>
+            <string>二值化图像-左眼</string>
            </property>
           </widget>
          </item>
@@ -173,7 +173,7 @@
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>binary_right</string>
+            <string>二值化图像-右眼</string>
            </property>
           </widget>
          </item>
@@ -182,22 +182,22 @@
        <item>
         <layout class="QHBoxLayout" name="tracking">
          <item>
-          <widget class="QLabel" name="tracking_left">
+          <widget class="QLabel" name="irisDetection_left">
            <property name="styleSheet">
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>tracking_left</string>
+            <string>虹膜定位-左眼</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="tracking_right">
+          <widget class="QLabel" name="irisDetection_right">
            <property name="styleSheet">
             <string notr="true">border: 1px solid black;</string>
            </property>
            <property name="text">
-            <string>tracking_right</string>
+            <string>虹膜定位-右眼</string>
            </property>
           </widget>
          </item>
@@ -231,7 +231,7 @@
             <bool>false</bool>
            </property>
            <property name="currentText">
-            <string>computerCamera</string>
+            <string>使用电脑摄像头</string>
            </property>
            <property name="maxVisibleItems">
             <number>10</number>
@@ -247,12 +247,12 @@
            </property>
            <item>
             <property name="text">
-             <string>computerCamera</string>
+             <string>使用电脑摄像头</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>phoneCamera</string>
+             <string>使用网络摄像头</string>
             </property>
            </item>
           </widget>
@@ -260,7 +260,7 @@
          <item>
           <widget class="QPushButton" name="camera">
            <property name="text">
-            <string>openCamera</string>
+            <string>打开摄像头</string>
            </property>
           </widget>
          </item>
@@ -269,9 +269,9 @@
       </layout>
      </item>
      <item row="3" column="3">
-      <widget class="QGroupBox" name="trackMethod">
+      <widget class="QGroupBox" name="irisDetectionMethod">
        <property name="title">
-        <string>trackMethod</string>
+        <string>虹膜定位方法</string>
        </property>
        <widget class="QRadioButton" name="useHoughCircles">
         <property name="geometry">
@@ -283,7 +283,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>useHoughCircles</string>
+         <string>霍夫圆检测</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -299,7 +299,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>useOperator</string>
+         <string>圆算子检测</string>
         </property>
        </widget>
       </widget>
@@ -307,7 +307,7 @@
      <item row="1" column="3">
       <widget class="QGroupBox" name="binaryMethod">
        <property name="title">
-        <string>binaryMethod</string>
+        <string>二值化方法</string>
        </property>
        <widget class="QRadioButton" name="useDirectCompare">
         <property name="geometry">
@@ -319,7 +319,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>useDirectCompare</string>
+         <string>直接数值处理</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -335,7 +335,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>useCoarsePositioning</string>
+         <string>粗定位中心扩散</string>
         </property>
         <property name="checked">
          <bool>false</bool>
